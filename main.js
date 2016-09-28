@@ -51,7 +51,7 @@ document.addEventListener("keydown", (event) => {
 				moveToEndOfPreviousLine();
 			} else { // move back 1 char
 				let line = editor.doc.getLine(pos.line);
-				if (line.hasPreceedingWhiteSpace()) {
+				if (line.hasOnlyWhiteSpaceBeforeIndex(pos.ch)) {
 					moveToEndOfPreviousLine();
 				} else {
 					editor.setCursor({ line: pos.line, ch: pos.ch - 1 });
@@ -126,6 +126,6 @@ function updateIncompleteMark() {
 	});
 }
 
-String.prototype.hasPreceedingWhiteSpace = function() {
-	return this.indexOf(this.trim()) != 0;
+String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {
+	return this.substring(index) == this.trim();
 };
