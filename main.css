@@ -1,0 +1,8 @@
+.invalid {
+	background-color: red;
+	color: white !important;
+}
+
+.incomplete {
+	color: gray !important;
+}
