@@ -104,6 +104,10 @@ function moveToEndOfPreviousLine() {
 }
 
 function isComplete() {
+	if (incompleteMark.lines.length != 0) {
+		return false;
+	}
+
 	for (var i = 0; i < invalids.length; i++) {
 		let arr = invalids[i];
 		for (var j = 0; j < arr.length; j++) {
