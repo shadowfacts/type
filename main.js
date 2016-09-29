@@ -29,8 +29,9 @@ $.get({
 
 // setup
 function setup(data, mode) {
-	editor = new CodeMirror(document.body, {
-		value: data,
+	let el = document.getElementById("editor");
+	el.value = data;
+	editor = CodeMirror.fromTextArea(el, {
 		mode: mode,
 		readOnly: true,
 		autofocus: true,
@@ -41,6 +42,8 @@ function setup(data, mode) {
 			Right: () => {}
 		}
 	});
+
+	editor.setSize("100%", "100%");
 
 	incompleteMark = editor.doc.markText({ line: 0, ch: 0 }, getEndPos(), {
 		className: "incomplete"
