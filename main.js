@@ -13,19 +13,25 @@ let extensions = {
 let file = window.location.hash.substring(1);
 $.get({
 	url: `https://raw.githubusercontent.com/${file}`,
-	success: (data) => {
+	success: (code) => {
 		let parts = file.split(".");
 		let fileExtension = parts[parts.length - 1];
-		let extension = extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension] : fileExtension;
-		setup(data, extension);
+		let mode = extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension] : fileExtension;
+		$.get({
+			url: `/codemirror/mode/${mode}/${mode}.js`,
+			success: (data) => {
+				eval(data);
+				setup(code, mode);
+			}
+		});
 	}
 });
 
 // setup
-function setup(data, extension) {
+function setup(data, mode) {
 	editor = new CodeMirror(document.body, {
 		value: data,
-		mode: extension,
+		mode: mode,
 		readOnly: true,
 		autofocus: true,
 		extraKeys: {
