@@ -145,9 +145,11 @@ function isComplete() {
 
 	for (var i = 0; i < invalids.length; i++) {
 		let arr = invalids[i];
-		for (var j = 0; j < arr.length; j++) {
-			if (arr[j]) {
-				return false;
+		if (arr) {
+			for (var j = 0; j < arr.length; j++) {
+				if (arr[j]) {
+					return false;
+				}
 			}
 		}
 	}
