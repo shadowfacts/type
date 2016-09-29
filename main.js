@@ -2,7 +2,13 @@ let editor = new CodeMirror(document.body, {
 	value: "function myScript() {\t\n\treturn 100;\n}",
 	mode: "javascript",
 	readOnly: true,
-	autofocus: true
+	autofocus: true,
+	extraKeys: {
+		Up: () => {},
+		Down: () => {},
+		Left: () => {},
+		Right: () => {}
+	}
 });
 
 var incompleteMark = editor.doc.markText({ line: 0, ch: 0 }, getEndPos(), {
@@ -17,6 +23,11 @@ editor.on("focus", (instance, event) => {
 editor.on("blur", (instance, event) => {
 	focused = false;
 })
+
+editor.on("mousedown", (instance, event) => {
+	event.preventDefault();
+	editor.focus();
+});
 
 let invalids = [];
 
