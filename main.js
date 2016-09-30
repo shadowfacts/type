@@ -6,7 +6,8 @@ let invalids = [];
 
 let extensions = {
 	js: "javascript",
-	kt: "kotlin"
+	kt: "kotlin",
+	md: "markdown"
 };
 
 // fetch file and setup
@@ -120,10 +121,22 @@ function setup(data, mode) {
 					let currentLine = editor.doc.getLine(pos.line);
 					let trimmed = currentLine.trim();
 					if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
-						let newLine = pos.line + 1;
-						let text = editor.doc.getLine(newLine);
-						let ch = text.indexOf(text.trim());
-						editor.setCursor({ line: newLine, ch: ch });
+						var newLine = pos.line;
+						while (true) {
+							newLine++;
+							if (newLine >= editor.doc.size) { // go to end of last line
+								editor.setCursor(getEndPos());
+								break;
+							} else { // try go to next line
+								let newText = editor.doc.getLine(newLine);
+								let newTrimmed = newText.trim();
+								if (newTrimmed.length != 0) { // line is not empty (whitespace-only)
+									let ch = newText.indexOf(newTrimmed);
+									editor.setCursor({ line: newLine, ch: ch });
+									break;
+								}
+							}
+						}
 						updateIncompleteMark();
 					}
 				}
@@ -139,17 +152,25 @@ function setup(data, mode) {
 function moveToEndOfPreviousLine() {
 	let pos = editor.getCursor();
 	if (pos.line > 0) {
-		let newLine = pos.line - 1;
-		let text = editor.doc.getLine(newLine);
-		let trimmed = text.trim();
-		let ch = text.indexOf(trimmed) + trimmed.length;
-		editor.setCursor({ line: newLine, ch: ch });
+		var newLine = pos.line;
+		while (true) {
+			newLine--;
+			let text = editor.doc.getLine(newLine);
+			let trimmed = text.trim();
+			if (trimmed.length != 0) {
+				let ch = text.indexOf(trimmed) + trimmed.length;
+				editor.setCursor({ line: newLine, ch: ch });
+				break;
+			}
+		}
 	}
 }
 
 function isComplete() {
-	if (incompleteMark.lines.length != 0) {
-		return false;
+	if (!areAllNextLinesEmpty()) {
+		if (incompleteMark.lines.length != 0) {
+			return false;
+		}
 	}
 
 	for (var i = 0; i < invalids.length; i++) {
@@ -160,6 +181,17 @@ function isComplete() {
 					return false;
 				}
 			}
+		}
+	}
+	return true;
+}
+
+function areAllNextLinesEmpty() {
+	let pos = editor.getCursor();
+	for (var i = pos.line + 1; i < editor.doc.size; i++) {
+		let line = editor.doc.getLine(i);
+		if (line.trim().length != 0) {
+			return false;
 		}
 	}
 	return true;
