@@ -5,11 +5,14 @@ var focused = false;
 let invalids = [];
 
 // fetch file and setup
-let file = window.location.hash.substring(1);
+let hash = window.location.hash.substring(1);
+let hashBits = hash.split("/");
+let repo = hashBits.slice(0, 3).join("/");
+let filePath = hashBits.slice(3, hashBits.length).join("/");
 $.get({
-	url: `https://raw.githubusercontent.com/${file}`,
+	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
 	success: (code) => {
-		let parts = file.split(".");
+		let parts = filePath.split(".");
 		let fileExtension = parts[parts.length - 1];
 		let lang = getLanguageByExtension(fileExtension);
 		$.get({
@@ -40,107 +43,124 @@ function setup(data, mime) {
 
 	editor.setSize("100%", "100%");
 
-	incompleteMark = editor.doc.markText({ line: 0, ch: 0 }, getEndPos(), {
-		className: "incomplete"
-	});
-
-	focused = true;
-
-	editor.on("focus", (instance, event) => {
-		focused = true;
-	});
-	editor.on("blur", (instance, event) => {
-		focused = false;
-	});
-
-	editor.on("mousedown", (instance, event) => {
-		event.preventDefault();
-		editor.focus();
-	});
-
-	document.addEventListener("keypress", (event) => {
-		if (focused) {
-			event.preventDefault();
-
-			let pos = editor.getCursor();
-			let line = editor.doc.getLine(pos.line);
-			let char = line.charCodeAt(pos.ch);
-			if (event.charCode != char) {
-				let mark = editor.doc.markText(pos, {line: pos.line, ch: pos.ch + 1}, {
-					className: "invalid"
-				});
-				if (!invalids[pos.line]) invalids[pos.line] = [];
-				invalids[pos.line][pos.ch] = mark;
+	localforage.getItem(repo)
+		.then((val) => {
+			var startPos; // the initial position of the cursor
+			if (val && val[filePath] && val[filePath].pos) {
+				startPos = val[filePath].pos;
+			} else {
+				startPos = { line: 0, ch: 0 };
 			}
-			editor.setCursor({ line: pos.line, ch: pos.ch + 1 });
-			updateIncompleteMark();
-		}
-	});
 
-	document.addEventListener("keydown", (event) => {
-		if (focused) {
-			var result = false;
+			saveCursor();
+			editor.setCursor(startPos);
 
-			if (event.keyCode == 8) { // delete
-				result = true;
+			incompleteMark = editor.doc.markText(editor.getCursor(), getEndPos(), {
+				className: "incomplete"
+			});
 
-				let pos = editor.getCursor();
-				if (pos.ch == 0) { // move up 1 line {
-					moveToEndOfPreviousLine();
-				} else { // move back 1 char
+			focused = true;
+
+			editor.on("focus", (instance, event) => {
+				focused = true;
+			});
+			editor.on("blur", (instance, event) => {
+				focused = false;
+			});
+
+			editor.on("mousedown", (instance, event) => {
+				event.preventDefault();
+				editor.focus();
+			});
+
+			document.addEventListener("keypress", (event) => {
+				if (focused) {
+					event.preventDefault();
+
+					let pos = editor.getCursor();
 					let line = editor.doc.getLine(pos.line);
-					if (line.hasOnlyWhiteSpaceBeforeIndex(pos.ch)) {
-						moveToEndOfPreviousLine();
-					} else {
-						editor.setCursor({ line: pos.line, ch: pos.ch - 1 });
+					let char = line.charCodeAt(pos.ch);
+					if (event.charCode != char) {
+						let mark = editor.doc.markText(pos, {line: pos.line, ch: pos.ch + 1}, {
+							className: "invalid"
+						});
+						if (!invalids[pos.line]) invalids[pos.line] = [];
+						invalids[pos.line][pos.ch] = mark;
 					}
+					editor.setCursor({ line: pos.line, ch: pos.ch + 1 });
+					updateIncompleteMark();
 				}
+			});
 
-				let newPos = editor.getCursor();
-				let lineInvalids = invalids[newPos.line];
-				if (lineInvalids) {
-					let mark = lineInvalids[newPos.ch];
-					if (mark) {
-						mark.clear();
-						lineInvalids.splice(newPos.ch, 1);
-					}
-				}
+			document.addEventListener("keydown", (event) => {
+				if (focused) {
+					var result = false;
 
-				updateIncompleteMark();
-			} else if (event.keyCode == 13) { // enter
-				result = true;
+					if (event.keyCode == 8) { // delete
+						result = true;
 
-				let pos = editor.getCursor();
-				if (pos.line != editor.doc.size - 1) {
-					let currentLine = editor.doc.getLine(pos.line);
-					let trimmed = currentLine.trim();
-					if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
-						var newLine = pos.line;
-						while (true) {
-							newLine++;
-							if (newLine >= editor.doc.size) { // go to end of last line
-								editor.setCursor(getEndPos());
-								break;
-							} else { // try go to next line
-								let newText = editor.doc.getLine(newLine);
-								let newTrimmed = newText.trim();
-								if (newTrimmed.length != 0) { // line is not empty (whitespace-only)
-									let ch = newText.indexOf(newTrimmed);
-									editor.setCursor({ line: newLine, ch: ch });
-									break;
-								}
+						let pos = editor.getCursor();
+						if (pos.ch == 0) { // move up 1 line {
+							moveToEndOfPreviousLine();
+						} else { // move back 1 char
+							let line = editor.doc.getLine(pos.line);
+							if (line.hasOnlyWhiteSpaceBeforeIndex(pos.ch)) {
+								moveToEndOfPreviousLine();
+							} else {
+								editor.setCursor({ line: pos.line, ch: pos.ch - 1 });
 							}
 						}
+
+						let newPos = editor.getCursor();
+						let lineInvalids = invalids[newPos.line];
+						if (lineInvalids) {
+							let mark = lineInvalids[newPos.ch];
+							if (mark) {
+								mark.clear();
+								lineInvalids.splice(newPos.ch, 1);
+							}
+						}
+
 						updateIncompleteMark();
+					} else if (event.keyCode == 13) { // enter
+						result = true;
+
+						let pos = editor.getCursor();
+						if (pos.line != editor.doc.size - 1) {
+							let currentLine = editor.doc.getLine(pos.line);
+							let trimmed = currentLine.trim();
+							if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
+								var newLine = pos.line;
+								while (true) {
+									newLine++;
+									if (newLine >= editor.doc.size) { // go to end of last line
+										editor.setCursor(getEndPos());
+										break;
+									} else { // try go to next line
+										let newText = editor.doc.getLine(newLine);
+										let newTrimmed = newText.trim();
+										if (newTrimmed.length != 0) { // line is not empty (whitespace-only)
+											let ch = newText.indexOf(newTrimmed);
+											editor.setCursor({ line: newLine, ch: ch });
+											break;
+										}
+									}
+								}
+								updateIncompleteMark();
+							}
+						}
+					}
+
+					if (result) {
+						event.preventDefault();
 					}
 				}
-			}
+			});
 
-			if (result) {
-				event.preventDefault();
-			}
-		}
-	});
+		})
+		.catch((e) => {
+			throw e;
+		});
 }
 
 function moveToEndOfPreviousLine() {
@@ -200,6 +220,25 @@ function updateIncompleteMark() {
 	incompleteMark = editor.doc.markText(editor.getCursor(), getEndPos(), {
 		className: "incomplete"
 	});
+}
+
+function saveCursor() {
+	localforage.getItem(repo)
+		.then((val) => {
+			if (!val) val = {};
+
+			val[filePath] = {
+				pos: editor.getCursor()
+			};
+			localforage.setItem(repo, val)
+				.catch((e) => {
+					throw e;
+				});
+		})
+		.catch((e) => {
+			throw e;
+		});
+	setTimeout(saveCursor, 15000);
 }
 
 String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {
