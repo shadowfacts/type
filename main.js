@@ -4,12 +4,6 @@ var incompleteMark;
 var focused = false;
 let invalids = [];
 
-let extensions = {
-	js: "javascript",
-	kt: "kotlin",
-	md: "markdown"
-};
-
 // fetch file and setup
 let file = window.location.hash.substring(1);
 $.get({
@@ -17,23 +11,23 @@ $.get({
 	success: (code) => {
 		let parts = file.split(".");
 		let fileExtension = parts[parts.length - 1];
-		let mode = extensions.hasOwnProperty(fileExtension) ? extensions[fileExtension] : fileExtension;
+		let lang = getLanguageByExtension(fileExtension);
 		$.get({
-			url: `/codemirror/mode/${mode}/${mode}.js`,
+			url: `/codemirror/mode/${lang.file}/${lang.file}.js`,
 			success: (data) => {
 				eval(data);
-				setup(code, mode);
+				setup(code, lang.mime);
 			}
 		});
 	}
 });
 
 // setup
-function setup(data, mode) {
+function setup(data, mime) {
 	let el = document.getElementById("editor");
 	el.value = data;
 	editor = CodeMirror.fromTextArea(el, {
-		mode: mode,
+		mode: mime,
 		readOnly: true,
 		autofocus: true,
 		extraKeys: {
