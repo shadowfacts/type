@@ -246,24 +246,24 @@ function areAllNextLinesEmpty() {
 function getStartPos() {
 	var line = 0;
 	while (true) {
-		line++;
 		let text = editor.doc.getLine(line);
 		let trimmed = text.trim();
 		if (trimmed.length != 0) {
 			return { line: line, ch: text.indexOf(trimmed) };
 		}
+		line++;
 	}
 }
 
 function getEndPos() {
 	var line = editor.doc.size - 1;
 	while (true) {
-		line--;
 		let text = editor.doc.getLine(line);
 		let trimmed = text.trim();
 		if (trimmed.length != 0) {
 			return { line: line, ch: text.indexOf(trimmed) + trimmed.length };
 		}
+		line--;
 	}
 }
 
@@ -304,7 +304,7 @@ function getChunk(code) {
 				if (chunk == totalChunks - 1) {
 					return lines.slice(totalChunks - (lines.length % 50), lines.length);
 				} else {
-					return lines.slice(chunk * 50, (chunk + 1) * 50 + 1);
+					return lines.slice(chunk * 50, (chunk + 1) * 50);
 				}
 			} else {
 				if (!val) val = {};
@@ -323,16 +323,42 @@ function getChunk(code) {
 }
 
 function goToNextChunk() {
-	// slight delay is required b/c asynchronous shit
-	// setTimeout makes the updated chunk to be set after the save() call
 	if (isComplete()) {
-		setTimeout(() => {
+		save()
+			.then(() => {
+				localforage.getItem(repo)
+					.then((val) => {
+						let nextChunk = val[filePath].chunk + 1;
+						let totalChunks = Math.ceil(fileLines.length / 50);
+						if (nextChunk < totalChunks) { // not the last chunk
+							val[filePath].chunk = nextChunk;
+							localforage.setItem(repo, val)
+								.then(() => {
+									window.location.reload();
+								})
+								.catch((e) => {
+									throw e;
+								});
+						} else {
+							let hash = window.location.hash;
+							window.location.href = `/complete.html${hash}`;
+						}
+					})
+					.catch((e) => {
+						throw e;
+					});
+			});
+	}
+}
+
+function goToPrevChunk() {
+	save()
+		.then(() => {
 			localforage.getItem(repo)
 				.then((val) => {
-					let nextChunk = val[filePath].chunk + 1;
-					let totalChunks = Math.ceil(fileLines.length / 50);
-					if (nextChunk < totalChunks) { // not the last chunk
-						val[filePath].chunk = nextChunk;
+					let prevChunk = val[filePath].chunk - 1;
+					if (prevChunk >= 0) {
+						val[filePath].chunk = prevChunk;
 						localforage.setItem(repo, val)
 							.then(() => {
 								window.location.reload();
@@ -340,41 +366,12 @@ function goToNextChunk() {
 							.catch((e) => {
 								throw e;
 							});
-					} else {
-						// TODO: show completion screen
-						let hash = window.location.hash;
-						window.location.href = `/complete.html${hash}`;
 					}
 				})
 				.catch((e) => {
 					throw e;
 				});
-		}, 50);
-	}
-}
-
-function goToPrevChunk() {
-	// slight delay is required b/c asynchronous shit
-	// setTimeout makes the updated chunk to be set after the save() call
-	setTimeout(() => {
-		localforage.getItem(repo)
-			.then((val) => {
-				let prevChunk = val[filePath].chunk - 1;
-				if (prevChunk >= 0) {
-					val[filePath].chunk = prevChunk;
-					localforage.setItem(repo, val)
-						.then(() => {
-							window.location.reload();
-						})
-						.catch((e) => {
-							throw e;
-						});
-				}
-			})
-			.catch((e) => {
-				throw e;
-			});
-	}, 50);
+		});
 }
 
 function load() {
@@ -394,7 +391,7 @@ function load() {
 
 function save() {
 	localforage.setItem("theme", saveTheme());
-	localforage.getItem(repo)
+	return localforage.getItem(repo)
 		.then((val) => {
 			if (!val) val = {};
 			if (!val[filePath]) val[filePath] = {};
