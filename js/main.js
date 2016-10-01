@@ -353,13 +353,14 @@ function goToPrevChunk() {
 }
 
 function load() {
+	localforage.getItem("theme")
+		.then(loadTheme);
 	return localforage.getItem(repo)
 		.then((val) => {
 			if (val && val[filePath] && val[filePath].hasOwnProperty("chunk") && val[filePath].chunks) {
 				let chunk = val[filePath].chunks[val[filePath].chunk];
 				loadInvalids(chunk);
 				loadCursor(chunk);
-				loadTheme(val);
 			} else {
 				save();
 			}
@@ -367,6 +368,7 @@ function load() {
 }
 
 function save() {
+	localforage.setItem("theme", saveTheme());
 	localforage.getItem(repo)
 		.then((val) => {
 			if (!val) val = {};
@@ -380,7 +382,6 @@ function save() {
 			let chunk = file.chunks[file.chunk];
 			saveInvalids(chunk);
 			saveCursor(chunk);
-			saveTheme(val);
 
 			localforage.setItem(repo, val)
 				.catch((e) => {
@@ -419,15 +420,15 @@ function saveInvalids(obj) {
 	obj.invalids = serialized;
 }
 
-function loadTheme(obj) {
-	if (obj && obj.theme) {
-		themeSelector.val(obj.theme);
-		setTheme(obj.theme);
+function loadTheme(theme) {
+	if (theme) {
+		themeSelector.val(theme);
+		setTheme(theme);
 	}
 }
 
-function saveTheme(obj) {
-	obj.theme = themeSelector.val();
+function saveTheme() {
+	return themeSelector.val();
 }
 
 function loadCursor(obj) {
