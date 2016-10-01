@@ -133,7 +133,7 @@ function handleKeyDown(event) {
 
 function handleDelete(event) {
 	let pos = editor.getCursor();
-	if (pos.ch == 0) { // move up 1 line {
+	if (pos.ch == 0) { // move up 1 line
 		moveToEndOfPreviousLine();
 	} else { // move back 1 char
 		let line = editor.doc.getLine(pos.line);
@@ -159,7 +159,7 @@ function handleDelete(event) {
 
 function handleEnter(event) {
 	let pos = editor.getCursor();
-	if (pos.line != editor.doc.size - 1) {
+	if (pos.line < editor.doc.size) {
 		let currentLine = editor.doc.getLine(pos.line);
 		let trimmed = currentLine.trim();
 		if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
@@ -182,6 +182,8 @@ function handleEnter(event) {
 			updateIncompleteMark();
 			save();
 		}
+	} else {
+		goToNextChunk();
 	}
 }
 
@@ -204,6 +206,9 @@ function moveToEndOfPreviousLine() {
 				break;
 			}
 		}
+	} else {
+		save();
+		goToPrevChunk();
 	}
 }
 
@@ -238,8 +243,28 @@ function areAllNextLinesEmpty() {
 	return true;
 }
 
+function getStartPos() {
+	var line = 0;
+	while (true) {
+		line++;
+		let text = editor.doc.getLine(line);
+		let trimmed = text.trim();
+		if (trimmed.length != 0) {
+			return { line: line, ch: text.indexOf(trimmed) };
+		}
+	}
+}
+
 function getEndPos() {
-	return { line: editor.doc.size, ch: editor.doc.getLine(editor.doc.size - 1).length };
+	var line = editor.doc.size - 1;
+	while (true) {
+		line--;
+		let text = editor.doc.getLine(line);
+		let trimmed = text.trim();
+		if (trimmed.length != 0) {
+			return { line: line, ch: text.indexOf(trimmed) + trimmed.length };
+		}
+	}
 }
 
 function updateIncompleteMark() {
@@ -432,7 +457,7 @@ function saveTheme() {
 }
 
 function loadCursor(obj) {
-	editor.setCursor(obj && obj.cursor ? obj.cursor : { line: 0, ch: 0 });
+	editor.setCursor(obj && obj.cursor ? obj.cursor : getStartPos());
 }
 
 function saveCursor(obj) {
