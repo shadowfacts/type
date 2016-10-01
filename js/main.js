@@ -223,7 +223,9 @@ function isComplete() {
 		let arr = invalids[i];
 		if (arr) {
 			for (var j = 0; j < arr.length; j++) {
-				if (arr[j]) {
+				// invalid marks are sometimes cleared but not removed
+				// this can be checked by checking mark.lines.length != 0
+				if (arr[j] && arr[j].lines.length != 0) {
 					return false;
 				}
 			}
