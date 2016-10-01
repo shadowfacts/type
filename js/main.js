@@ -3,6 +3,7 @@ var editor; // code mirror instance
 var incompleteMark;
 var focused = false;
 let invalids = [];
+var fileLines;
 
 // fetch file and setup
 let hash = window.location.hash.substring(1);
@@ -12,6 +13,7 @@ let filePath = hashBits.slice(3, hashBits.length).join("/");
 $.get({
 	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
 	success: (code) => {
+		fileLines = code.split("\n");
 		getChunk(code)
 			.then((chunk) => {
 				let lang = getLanguageByExtension(getFileExtension());
@@ -112,7 +114,7 @@ function handleKeyPress(event) {
 		if (event.charCode != char) {
 			markInvalid(pos);
 		}
-		editor.setCursor({ line: pos.line, ch: pos.ch + 1 });
+		setCursor({ line: pos.line, ch: pos.ch + 1 });
 		updateIncompleteMark();
 	}
 }
@@ -138,7 +140,7 @@ function handleDelete(event) {
 		if (line.hasOnlyWhiteSpaceBeforeIndex(pos.ch)) {
 			moveToEndOfPreviousLine();
 		} else {
-			editor.setCursor({ line: pos.line, ch: pos.ch - 1 });
+			setCursor({ line: pos.line, ch: pos.ch - 1 });
 		}
 	}
 
@@ -165,19 +167,20 @@ function handleEnter(event) {
 			while (true) {
 				newLine++;
 				if (newLine >= editor.doc.size) { // go to end of last line
-					editor.setCursor(getEndPos());
+					setCursor(getEndPos());
 					break;
 				} else { // try go to next line
 					let newText = editor.doc.getLine(newLine);
 					let newTrimmed = newText.trim();
 					if (newTrimmed.length != 0) { // line is not empty (whitespace-only)
 						let ch = newText.indexOf(newTrimmed);
-						editor.setCursor({ line: newLine, ch: ch });
+						setCursor({ line: newLine, ch: ch });
 						break;
 					}
 				}
 			}
 			updateIncompleteMark();
+			save();
 		}
 	}
 }
@@ -192,7 +195,7 @@ function moveToEndOfPreviousLine() {
 			let trimmed = text.trim();
 			if (trimmed.length != 0) {
 				let ch = text.indexOf(trimmed) + trimmed.length;
-				editor.setCursor({ line: newLine, ch: ch });
+				setCursor({ line: newLine, ch: ch });
 				break;
 			}
 		}
@@ -289,6 +292,33 @@ function getChunk(code) {
 		});
 }
 
+function completeChunk() {
+	if (isComplete()) {
+		setTimeout(() => {
+			localforage.getItem(repo)
+				.then((val) => {
+					let nextChunk = val[filePath].chunk + 1;
+					let totalChunks = Math.ceil(fileLines.length / 50);
+					if (nextChunk < totalChunks) { // not the last chunk
+						val[filePath].chunk = nextChunk;
+						localforage.setItem(repo, val)
+							.then(() => {
+								window.location.reload();
+							})
+							.catch((e) => {
+								throw e;
+							});
+					} else {
+						// TODO: show completion screen
+					}
+				})
+				.catch((e) => {
+					throw e;
+				});
+		}, 500);
+	}
+}
+
 function load() {
 	return localforage.getItem(repo)
 		.then((val) => {
@@ -327,7 +357,6 @@ function save() {
 		.catch((e) => {
 			throw e;
 		});
-	setTimeout(save, 15000);
 }
 
 function loadInvalids(obj) {
@@ -383,6 +412,32 @@ function setTheme(theme) {
 	editor.setOption("theme", theme);
 }
 
+function setCursor(pos) {
+	editor.setCursor(pos);
+	let end = getEndPos();
+	if (pos.line == end.line && pos.ch == end.ch) {
+		completeChunk();
+	}
+}
+
 String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {
 	return this.substring(index) == this.trim();
 };
+
+// debug helpers
+function removeAllInvalids() {
+	editor.operation(() => {
+		for (var i = 0; i < invalids.length; i++) {
+			let inner = invalids[i];
+			if (inner) {
+				for (var j = 0; j < invalids.length; j++) {
+					let mark = inner[j];
+					if (mark) {
+						mark.clear();
+					}
+				}
+			}
+		}
+		invalids = [];
+	});
+}
