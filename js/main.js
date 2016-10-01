@@ -159,10 +159,10 @@ function handleDelete(event) {
 
 function handleEnter(event) {
 	let pos = editor.getCursor();
-	if (pos.line < editor.doc.size - 1) {
-		let currentLine = editor.doc.getLine(pos.line);
-		let trimmed = currentLine.trim();
-		if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
+	let currentLine = editor.doc.getLine(pos.line);
+	let trimmed = currentLine.trim();
+	if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
+		if (pos.line < editor.doc.size - 1) {
 			var newLine = pos.line;
 			while (true) {
 				newLine++;
@@ -181,9 +181,9 @@ function handleEnter(event) {
 			}
 			updateIncompleteMark();
 			save();
+		} else {
+			goToNextChunk();
 		}
-	} else {
-		goToNextChunk();
 	}
 }
 
