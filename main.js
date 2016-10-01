@@ -43,18 +43,9 @@ function setup(data, mime) {
 
 	editor.setSize("100%", "100%");
 
-	localforage.getItem(repo)
-		.then((val) => {
-			var startPos; // the initial position of the cursor
-			if (val && val[filePath] && val[filePath].pos) {
-				startPos = val[filePath].pos;
-			} else {
-				startPos = { line: 0, ch: 0 };
-			}
-
-			saveCursor();
-			editor.setCursor(startPos);
-
+	load()
+		.then(save)
+		.then(() => {
 			incompleteMark = editor.doc.markText(editor.getCursor(), getEndPos(), {
 				className: "incomplete"
 			});
@@ -81,11 +72,7 @@ function setup(data, mime) {
 					let line = editor.doc.getLine(pos.line);
 					let char = line.charCodeAt(pos.ch);
 					if (event.charCode != char) {
-						let mark = editor.doc.markText(pos, {line: pos.line, ch: pos.ch + 1}, {
-							className: "invalid"
-						});
-						if (!invalids[pos.line]) invalids[pos.line] = [];
-						invalids[pos.line][pos.ch] = mark;
+						markInvalid(pos);
 					}
 					editor.setCursor({ line: pos.line, ch: pos.ch + 1 });
 					updateIncompleteMark();
@@ -222,14 +209,30 @@ function updateIncompleteMark() {
 	});
 }
 
-function saveCursor() {
+function markInvalid(pos) {
+	let mark = editor.doc.markText(pos, {line: pos.line, ch: pos.ch + 1}, {
+		className: "invalid"
+	});
+	if (!invalids[pos.line]) invalids[pos.line] = [];
+	invalids[pos.line][pos.ch] = mark;
+}
+
+function load() {
+	return localforage.getItem(repo)
+		.then((val) => {
+			loadInvalids(val[filePath]);
+			loadCursor(val[filePath]);
+		});
+}
+
+function save() {
+	let obj = {};
+	saveInvalids(obj);
+	saveCursor(obj);
 	localforage.getItem(repo)
 		.then((val) => {
 			if (!val) val = {};
-
-			val[filePath] = {
-				pos: editor.getCursor()
-			};
+			val[filePath] = obj;
 			localforage.setItem(repo, val)
 				.catch((e) => {
 					throw e;
@@ -238,7 +241,42 @@ function saveCursor() {
 		.catch((e) => {
 			throw e;
 		});
-	setTimeout(saveCursor, 15000);
+}
+
+function loadInvalids(val) {
+	let serialized = val.invalids;
+	if (serialized) {
+		editor.operation(() => { // buffer all DOM changes together b/c performance
+			serialized.forEach(markInvalid);
+		});
+	}
+}
+
+function saveInvalids(obj) {
+	let serialized = [];
+	for (var i = 0; i < invalids.length; i++) {
+		let inner = invalids[i];
+		if (!inner) continue;
+
+		for (var j = 0; j < inner.length; j++) {
+			let mark = inner[j];
+			if (!mark) continue;
+
+			let pos = mark.find();
+			if (pos) {
+				serialized.push(pos.from);
+			}
+		}
+	}
+	obj.invalids = serialized;
+}
+
+function loadCursor(val) {
+	editor.setCursor(val && val.cursor ? val.cursor : { line: 0, ch: 0 });
+}
+
+function saveCursor(obj) {
+	obj.cursor = editor.getCursor();
 }
 
 String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {
