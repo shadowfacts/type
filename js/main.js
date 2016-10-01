@@ -300,7 +300,7 @@ function getChunk(code) {
 		.then((val) => {
 			if (val && val[filePath] && val[filePath].chunk) {
 				let chunk = val[filePath].chunk;
-				let totalChunks = Math.floor(lines.length / 50);
+				let totalChunks = Math.ceil(lines.length / 50);
 				if (chunk == totalChunks - 1) {
 					return lines.slice(totalChunks - (lines.length % 50), lines.length);
 				} else {
