@@ -3,16 +3,20 @@
 <head>
 	<meta charset="UTF-8">
 	<title>typing4</title>
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/codemirror.min.css">
 	<link rel="stylesheet" href="main.css">
 </head>
 <body>
 	
+	<select id="language">
+		<option value="auto-detect">Auto-Detect</option>
+	</select>
+
 	<textarea id="editor"></textarea>
 
-	<script src="https://cdn.jsdelivr.net/codemirror/4.5.0/codemirror.min.js"></script>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/localforage/1.4.2/localforage.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/codemirror.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.2/localforage.min.js"></script>
 	<script src="languages.js"></script>
 	<script src="main.js"></script>
 </body>

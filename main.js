@@ -16,7 +16,7 @@ $.get({
 		let fileExtension = parts[parts.length - 1];
 		let lang = getLanguageByExtension(fileExtension);
 		$.get({
-			url: `https://cdn.jsdelivr.net/codemirror/4.5.0/mode/${lang.file}/${lang.file}.js`,
+			url: `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`,
 			success: (data) => {
 				eval(data);
 				setup(code, lang.mime);
