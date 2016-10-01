@@ -13,12 +13,8 @@ $.get({
 	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
 	success: (code) => {
 		let lang = getLanguageByExtension(getFileExtension());
-		$.get({
-			url: `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`,
-			success: (data) => {
-				eval(data);
-				setup(code, lang.mime);
-			}
+		$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
+			setup(code, lang.mime);
 		});
 	}
 });
@@ -247,13 +243,9 @@ function markInvalid(pos) {
 }
 
 function setLanguage(lang) {
-	$.get({
-		url: `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`,
-		success: (data) => {
-			eval(data);
-			editor.setOption("mode", lang.mime);
-			console.log(`Changed language to ${lang.mime}`);
-		}
+	$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
+		editor.setOption("mode", lang.mime);
+		console.log(`Changed language to ${lang.mime}`);
 	});
 }
 
