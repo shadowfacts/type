@@ -12,9 +12,7 @@ let filePath = hashBits.slice(3, hashBits.length).join("/");
 $.get({
 	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
 	success: (code) => {
-		let parts = filePath.split(".");
-		let fileExtension = parts[parts.length - 1];
-		let lang = getLanguageByExtension(fileExtension);
+		let lang = getLanguageByExtension(getFileExtension());
 		$.get({
 			url: `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`,
 			success: (data) => {
@@ -24,6 +22,21 @@ $.get({
 		});
 	}
 });
+
+let langaugeSelector = $("#language");
+langaugeSelector.change(() => {
+	let selected = langaugeSelector.val();
+	var langauge;
+	if (selected == "auto-detect") {
+		language = getLanguageByExtension(getFileExtension());
+	} else {
+		language = languages[selected];
+	}
+	setLanguage(language);
+});
+for (key in languages) {
+	langaugeSelector.append(`<option value="${key}">${key}</option>`);
+}
 
 // setup
 function setup(data, mime) {
@@ -223,6 +236,22 @@ function markInvalid(pos) {
 	});
 	if (!invalids[pos.line]) invalids[pos.line] = [];
 	invalids[pos.line][pos.ch] = mark;
+}
+
+function setLanguage(lang) {
+	$.get({
+		url: `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`,
+		success: (data) => {
+			eval(data);
+			editor.setOption("mode", lang.mime);
+			console.log(`Changed language to ${lang.mime}`);
+		}
+	});
+}
+
+function getFileExtension() {
+	let parts = filePath.split(".");
+	return parts[parts.length - 1];
 }
 
 function load() {

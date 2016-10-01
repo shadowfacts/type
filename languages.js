@@ -399,7 +399,7 @@ let languages = {
 		mime: "text/x-yaml",
 		extensions: ["yml", "yaml"]
 	},
-	"Jekyll (YAML front matter + GitHub flavored Markdown)": {
+	"Jekyll (YAML front matter + GFM)": {
 		file: "yaml-frontmatter",
 		mime: "yaml-frontmatter"
 	}
