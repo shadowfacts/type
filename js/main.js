@@ -310,6 +310,8 @@ function completeChunk() {
 							});
 					} else {
 						// TODO: show completion screen
+						let hash = window.location.hash;
+						window.location.href = `/complete.html${hash}`;
 					}
 				})
 				.catch((e) => {
