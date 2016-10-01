@@ -23,6 +23,7 @@ $.get({
 	}
 });
 
+// language selector
 let langaugeSelector = $("#language");
 langaugeSelector.change(() => {
 	let selected = langaugeSelector.val();
@@ -37,6 +38,13 @@ langaugeSelector.change(() => {
 for (key in languages) {
 	langaugeSelector.append(`<option value="${key}">${key}</option>`);
 }
+
+// theme selector
+let themeSelector = $("#theme");
+themeSelector.change(() => {
+	setTheme(themeSelector.val());
+	save();
+});
 
 // setup
 function setup(data, mime) {
@@ -259,6 +267,7 @@ function load() {
 		.then((val) => {
 			loadInvalids(val[filePath]);
 			loadCursor(val[filePath]);
+			loadTheme(val[filePath]);
 		});
 }
 
@@ -266,6 +275,7 @@ function save() {
 	let obj = {};
 	saveInvalids(obj);
 	saveCursor(obj);
+	saveTheme(obj);
 	localforage.getItem(repo)
 		.then((val) => {
 			if (!val) val = {};
@@ -280,10 +290,10 @@ function save() {
 		});
 }
 
-function loadInvalids(val) {
-	if (val && val.invalids) {
+function loadInvalids(obj) {
+	if (obj && obj.invalids) {
 		editor.operation(() => { // buffer all DOM changes together b/c performance
-			val.invalids.forEach(markInvalid);
+			obj.invalids.forEach(markInvalid);
 		});
 	}
 }
@@ -307,12 +317,30 @@ function saveInvalids(obj) {
 	obj.invalids = serialized;
 }
 
+function loadTheme(obj) {
+	if (obj && obj.theme) {
+		themeSelector.val(obj.theme);
+		setTheme(obj.theme);
+	}
+}
+
+function saveTheme(obj) {
+	obj.theme = themeSelector.val();
+}
+
 function loadCursor(val) {
 	editor.setCursor(val && val.cursor ? val.cursor : { line: 0, ch: 0 });
 }
 
 function saveCursor(obj) {
 	obj.cursor = editor.getCursor();
+}
+
+function setTheme(theme) {
+	if (theme != "default") {
+		$("head").append(`<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/theme/${theme}.min.css">`);
+	}
+	editor.setOption("theme", theme);
 }
 
 String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {
