@@ -252,10 +252,9 @@ function save() {
 }
 
 function loadInvalids(val) {
-	let serialized = val.invalids;
-	if (serialized) {
+	if (val && val.invalids) {
 		editor.operation(() => { // buffer all DOM changes together b/c performance
-			serialized.forEach(markInvalid);
+			val.invalids.forEach(markInvalid);
 		});
 	}
 }
