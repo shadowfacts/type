@@ -16,7 +16,7 @@ $.get({
 		let fileExtension = parts[parts.length - 1];
 		let lang = getLanguageByExtension(fileExtension);
 		$.get({
-			url: `/codemirror/mode/${lang.file}/${lang.file}.js`,
+			url: `https://cdn.jsdelivr.net/codemirror/4.5.0/mode/${lang.file}/${lang.file}.js`,
 			success: (data) => {
 				eval(data);
 				setup(code, lang.mime);
