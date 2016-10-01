@@ -191,11 +191,16 @@ function moveToEndOfPreviousLine() {
 		var newLine = pos.line;
 		while (true) {
 			newLine--;
+			if (newLine < 0) {
+				setCursor({ line: 0, ch: 0 });
+				break;
+			}
 			let text = editor.doc.getLine(newLine);
 			let trimmed = text.trim();
 			if (trimmed.length != 0) {
 				let ch = text.indexOf(trimmed) + trimmed.length;
 				setCursor({ line: newLine, ch: ch });
+				save();
 				break;
 			}
 		}
@@ -292,7 +297,9 @@ function getChunk(code) {
 		});
 }
 
-function completeChunk() {
+function goToNextChunk() {
+	// slight delay is required b/c asynchronous shit
+	// setTimeout makes the updated chunk to be set after the save() call
 	if (isComplete()) {
 		setTimeout(() => {
 			localforage.getItem(repo)
@@ -317,8 +324,32 @@ function completeChunk() {
 				.catch((e) => {
 					throw e;
 				});
-		}, 500);
+		}, 50);
 	}
+}
+
+function goToPrevChunk() {
+	// slight delay is required b/c asynchronous shit
+	// setTimeout makes the updated chunk to be set after the save() call
+	setTimeout(() => {
+		localforage.getItem(repo)
+			.then((val) => {
+				let prevChunk = val[filePath].chunk - 1;
+				if (prevChunk >= 0) {
+					val[filePath].chunk = prevChunk;
+					localforage.setItem(repo, val)
+						.then(() => {
+							window.location.reload();
+						})
+						.catch((e) => {
+							throw e;
+						});
+				}
+			})
+			.catch((e) => {
+				throw e;
+			});
+	}, 50);
 }
 
 function load() {
@@ -418,7 +449,9 @@ function setCursor(pos) {
 	editor.setCursor(pos);
 	let end = getEndPos();
 	if (pos.line == end.line && pos.ch == end.ch) {
-		completeChunk();
+		goToNextChunk();
+	} else if (pos.line == 0 && pos.ch == 0) {
+		goToPrevChunk();
 	}
 }
 
