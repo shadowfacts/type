@@ -12,10 +12,17 @@ let filePath = hashBits.slice(3, hashBits.length).join("/");
 $.get({
 	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
 	success: (code) => {
-		let lang = getLanguageByExtension(getFileExtension());
-		$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
-			setup(code, lang.mime);
-		});
+		getChunk(code)
+			.then((chunk) => {
+				let lang = getLanguageByExtension(getFileExtension());
+				console.log(`Detected language as ${lang.mime}`);
+				$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
+					setup(chunk, lang.mime);
+				});
+			})
+			.catch((e) => {
+				throw e;
+			})
 	}
 });
 
@@ -254,24 +261,64 @@ function getFileExtension() {
 	return parts[parts.length - 1];
 }
 
+function getChunk(code) {
+	let lines = code.split("\n");
+	return localforage.getItem(repo)
+		.then((val) => {
+			if (val && val[filePath] && val[filePath].chunk) {
+				let chunk = val[filePath].chunk;
+				let totalChunks = Math.floor(lines.length / 50);
+				if (chunk == totalChunks - 1) {
+					return lines.slice(totalChunks - (lines.length % 50), lines.length);
+				} else {
+					return lines.slice(chunk * 50, (chunk + 1) * 50 + 1);
+				}
+			} else {
+				if (!val) val = {};
+				if (!val[filePath]) val[filePath] = {};
+				val[filePath].chunk = 0;
+				localforage.setItem(repo, val)
+					.catch((e) => {
+						throw e;
+					});
+				return lines.slice(0, 51);
+			}
+		})
+		.then((lines) => {
+			return lines.join("\n");
+		});
+}
+
 function load() {
 	return localforage.getItem(repo)
 		.then((val) => {
-			loadInvalids(val[filePath]);
-			loadCursor(val[filePath]);
-			loadTheme(val[filePath]);
+			if (val && val[filePath] && val[filePath].hasOwnProperty("chunk") && val[filePath].chunks) {
+				let chunk = val[filePath].chunks[val[filePath].chunk];
+				loadInvalids(chunk);
+				loadCursor(chunk);
+				loadTheme(val);
+			} else {
+				save();
+			}
 		});
 }
 
 function save() {
-	let obj = {};
-	saveInvalids(obj);
-	saveCursor(obj);
-	saveTheme(obj);
 	localforage.getItem(repo)
 		.then((val) => {
 			if (!val) val = {};
-			val[filePath] = obj;
+			if (!val[filePath]) val[filePath] = {};
+			let file = val[filePath];
+			
+			if (!file.chunk) file.chunk = 0;
+			if (!file.chunks) file.chunks = [];
+			if (!file.chunks[file.chunk]) file.chunks[file.chunk] = {};
+			
+			let chunk = file.chunks[file.chunk];
+			saveInvalids(chunk);
+			saveCursor(chunk);
+			saveTheme(val);
+
 			localforage.setItem(repo, val)
 				.catch((e) => {
 					throw e;
@@ -280,6 +327,7 @@ function save() {
 		.catch((e) => {
 			throw e;
 		});
+	setTimeout(save, 15000);
 }
 
 function loadInvalids(obj) {
@@ -320,8 +368,8 @@ function saveTheme(obj) {
 	obj.theme = themeSelector.val();
 }
 
-function loadCursor(val) {
-	editor.setCursor(val && val.cursor ? val.cursor : { line: 0, ch: 0 });
+function loadCursor(obj) {
+	editor.setCursor(obj && obj.cursor ? obj.cursor : { line: 0, ch: 0 });
 }
 
 function saveCursor(obj) {
