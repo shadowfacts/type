@@ -162,7 +162,7 @@ let languages = {
 	"Groovy": {
 		file: "groovy",
 		mime: "text/x-groovy",
-		extensions: ["groovy", "grt", "gtpl", "gvy"]
+		extensions: ["groovy", "grt", "gtpl", "gvy", "gradle"]
 	},
 	"HAML": {
 		file: "haml",
@@ -294,6 +294,11 @@ let languages = {
 		mime: "text/x-protobuf",
 		extensions: ["proto"]
 	},
+	"Plain Text": {
+		file: [],
+		mime: "text/plain",
+		extensions: ["txt"]
+	},
 	"R": {
 		file: "r",
 		mime: "text/x-rsrc",
@@ -417,5 +422,5 @@ function getLanguageByExtension(ext) {
 			}
 		}
 	}
-	return null;
+	return languages["Plain Text"];
 }

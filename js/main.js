@@ -18,9 +18,23 @@ $.get({
 			.then((chunk) => {
 				let lang = getLanguageByExtension(getFileExtension());
 				console.log(`Detected language as ${lang.mime}`);
-				$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
-					setup(chunk, lang.mime);
-				});
+				if (Array.isArray(lang.file)) {
+					if (lang.file.length != 0) {
+						var req = req = $.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[0]}/${lang.file[0]}.min.js`);
+						for (var i = 1; i < lang.file.length; i++) {
+							req = req.then($.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[i]}/${lang.file[i]}.min.js`));
+						}
+						req.then(() => {
+							setup(chunk, lang.mime);
+						});
+					} else {
+						setup(chunk, lang.mime);
+					}
+				} else {
+					$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
+						setup(chunk, lang.mime);
+					});
+				}
 			})
 			.catch((e) => {
 				throw e;
@@ -260,6 +274,9 @@ function getStartPos() {
 function getEndPos() {
 	var line = editor.doc.size - 1;
 	while (true) {
+		if (line <= editor.doc.size) {
+			return { line: editor.doc.size - 1, ch: editor.doc.getLine(editor.doc.size - 1).length - 1 };
+		}
 		let text = editor.doc.getLine(line);
 		let trimmed = text.trim();
 		if (trimmed.length != 0) {
@@ -304,7 +321,7 @@ function getChunk(code) {
 				let chunk = val[filePath].chunk;
 				let totalChunks = Math.ceil(lines.length / 50);
 				if (chunk == totalChunks - 1) {
-					return lines.slice(totalChunks - (lines.length % 50), lines.length);
+					return lines.slice(lines.length - (lines.length % 50), lines.length);
 				} else {
 					return lines.slice(chunk * 50, (chunk + 1) * 50);
 				}
