@@ -27,6 +27,12 @@ $("#form").submit((event) => {
 
 	let repo = $("#repo").val();
 	let branch = $("#branch").val();
-	let file = $("#file").val();
-	window.location.href = `/type.html#${repo}/${branch}/${file}`;
+
+	localforage.setItem(`${repo}/${branch}`, {})
+		.then(() => {
+			window.location.href = `/repo.html#${repo}/${branch}`;
+		})
+		.catch((e) => {
+			throw e;
+		});
 });
