@@ -4,6 +4,9 @@ var incompleteMark;
 var focused = false;
 let invalids = [];
 var fileLines;
+// WPM tracking
+var lastStartTime;
+var elapsedTime;
 
 let hash = window.location.hash.substring(1);
 let hashBits = hash.split("/");
@@ -114,7 +117,7 @@ function setup(data, mime) {
 				className: "incomplete"
 			});
 
-			focused = true;
+			resume();
 
 			editor.on("focus", handleFocus);
 			editor.on("blur", handleBlur);
@@ -130,11 +133,11 @@ function setup(data, mime) {
 }
 
 function handleFocus() {
-	focused = true;
+	resume();
 }
 
 function handleBlur() {
-	focused = false;
+	pause();
 }
 
 function handleMouseDown(instance, event) {
@@ -168,6 +171,14 @@ function handleKeyDown(event) {
 		} else if (event.keyCode == 9) { // tab
 			event.preventDefault();
 			handleTab(event);
+		} else if (event.keyCode == 27) { // escape
+			event.preventDefault();
+			pause();
+		}
+	} else {
+		if (event.keyCode == 27) {
+			event.preventDefault();
+			resume();
 		}
 	}
 }
@@ -221,6 +232,7 @@ function handleEnter(event) {
 				}
 			}
 			updateIncompleteMark();
+			updateWPM();
 			save();
 		} else {
 			goToNextChunk();
@@ -437,6 +449,7 @@ function load() {
 				let chunk = val[filePath].chunks[val[filePath].chunk];
 				loadInvalids(chunk);
 				loadCursor(chunk);
+				loadElapsedTime(chunk);
 			} else {
 				save();
 			}
@@ -458,6 +471,7 @@ function save() {
 			let chunk = file.chunks[file.chunk];
 			saveInvalids(chunk);
 			saveCursor(chunk);
+			saveElapsedTime(chunk);
 
 			localforage.setItem(repo, val)
 				.catch((e) => {
@@ -515,6 +529,14 @@ function saveCursor(obj) {
 	obj.cursor = editor.getCursor();
 }
 
+function loadElapsedTime(obj) {
+	elapsedTime = obj.elapsedTime;
+}
+
+function saveElapsedTime(obj) {
+	obj.elapsedTime = elapsedTime;
+}
+
 function setTheme(theme) {
 	if (theme != "default") {
 		$("head").append(`<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/theme/${theme}.min.css">`);
@@ -530,6 +552,47 @@ function setCursor(pos) {
 	} else if (pos.line == 0 && pos.ch == 0) {
 		goToPrevChunk();
 	}
+}
+
+function updateWPM() {
+	if (focused) {
+		// update elapsed time
+		if (!elapsedTime || isNaN(elapsedTime)) {	
+			elapsedTime = Date.now() - lastStartTime;
+		} else {
+			elapsedTime += Date.now() - lastStartTime;
+		}
+		lastStartTime = Date.now();
+	}
+
+	// calculate words typed
+	let typed = editor.doc.getRange({ line: 0, ch: 0 }, editor.getCursor());
+	let words = typed.split(/[\s,\.]+/).length;
+	
+	let seconds = elapsedTime / 1000;
+	if (seconds >= 60) {
+		// update real WPM
+		let minutes = seconds / 60;
+		$("#wpm").text(Math.round(words / minutes));
+	} else {
+		// extrapolate forwards
+		let scaledWords = words / (seconds / 60);
+		$("#wpm").text(Math.round(scaledWords));
+	}
+}
+
+function pause() {
+	focused = false;
+	elapsedTime += Date.now() - lastStartTime;
+	$("#paused").text("Paused");
+	$("#content").addClass("paused");
+}
+
+function resume() {
+	focused = true;
+	lastStartTime = Date.now();
+	$("#paused").text("");
+	$("#content").removeClass("paused");
 }
 
 String.prototype.hasOnlyWhiteSpaceBeforeIndex = function(index) {

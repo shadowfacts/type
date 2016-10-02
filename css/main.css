@@ -33,8 +33,21 @@
 	height: 20px;
 }
 
+#toolbar > #info {
+	float: right;
+	margin-right: 14px;
+}
+
+#toolbar > #info > #paused {
+	font-weight: bold;
+}
+
 #content {
 	margin-top: 33px;
+}
+
+#content.paused > .CodeMirror {
+	opacity: 0.5;
 }
 
 /* Index */
