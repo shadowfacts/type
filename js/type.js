@@ -65,6 +65,24 @@ themeSelector.change(() => {
 	save();
 });
 
+// restart button
+$("#restart").click(() => {
+	localforage.getItem(repo)
+		.then((val) => {
+			val[filePath] = {};
+			localforage.setItem(repo, val)
+				.then(() => {
+					window.location.reload();
+				})
+				.catch((e) => {
+					throw e;
+				});
+		})
+		.catch((e) => {
+			throw e;
+		});
+});
+
 // setup
 function setup(data, mime) {
 	let el = document.getElementById("editor");
