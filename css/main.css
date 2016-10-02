@@ -8,7 +8,7 @@
 	font-family: "Helvetica", Arial, sans-serif;
 }
 
-/* Editor */
+/* Type */
 .invalid {
 	background-color: red;
 	color: white !important;
@@ -22,6 +22,19 @@
 	display: none;
 	width: 100%;
 	height: 100%;
+}
+
+#toolbar {
+	position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	padding: 7px;
+	height: 20px;
+}
+
+.CodeMirror {
+	margin-top: 33px;
 }
 
 /* Index */

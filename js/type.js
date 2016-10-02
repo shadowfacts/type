@@ -5,42 +5,10 @@ var focused = false;
 let invalids = [];
 var fileLines;
 
-// fetch file and setup
 let hash = window.location.hash.substring(1);
 let hashBits = hash.split("/");
 let repo = hashBits.slice(0, 3).join("/");
 let filePath = hashBits.slice(3, hashBits.length).join("/");
-$.get({
-	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
-	success: (code) => {
-		fileLines = code.split("\n");
-		getChunk(code)
-			.then((chunk) => {
-				let lang = getLanguageByExtension(getFileExtension());
-				console.log(`Detected language as ${lang.mime}`);
-				if (Array.isArray(lang.file)) {
-					if (lang.file.length != 0) {
-						var req = req = $.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[0]}/${lang.file[0]}.min.js`);
-						for (var i = 1; i < lang.file.length; i++) {
-							req = req.then($.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[i]}/${lang.file[i]}.min.js`));
-						}
-						req.then(() => {
-							setup(chunk, lang.mime);
-						});
-					} else {
-						setup(chunk, lang.mime);
-					}
-				} else {
-					$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
-						setup(chunk, lang.mime);
-					});
-				}
-			})
-			.catch((e) => {
-				throw e;
-			})
-	}
-});
 
 // language selector
 let langaugeSelector = $("#language");
@@ -81,6 +49,44 @@ $("#restart").click(() => {
 		.catch((e) => {
 			throw e;
 		});
+});
+
+// back button
+$("#back").click(() => {
+	window.location.href = `/repo.html#${repo}`;
+});
+
+// fetch file and setup
+$.get({
+	url: `https://raw.githubusercontent.com/${repo}/${filePath}`,
+	success: (code) => {
+		fileLines = code.split("\n");
+		getChunk(code)
+			.then((chunk) => {
+				let lang = getLanguageByExtension(getFileExtension());
+				console.log(`Detected language as ${lang.mime}`);
+				if (Array.isArray(lang.file)) {
+					if (lang.file.length != 0) {
+						var req = req = $.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[0]}/${lang.file[0]}.min.js`);
+						for (var i = 1; i < lang.file.length; i++) {
+							req = req.then($.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[i]}/${lang.file[i]}.min.js`));
+						}
+						req.then(() => {
+							setup(chunk, lang.mime);
+						});
+					} else {
+						setup(chunk, lang.mime);
+					}
+				} else {
+					$.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file}/${lang.file}.min.js`, () => {
+						setup(chunk, lang.mime);
+					});
+				}
+			})
+			.catch((e) => {
+				throw e;
+			})
+	}
 });
 
 // setup
@@ -535,4 +541,10 @@ function removeAllInvalids() {
 		}
 		invalids = [];
 	});
+}
+
+function goToEnd() {
+	editor.setCursor(getEndPos());
+	updateIncompleteMark();
+	save();
 }
