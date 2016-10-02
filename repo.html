@@ -6,27 +6,33 @@
 	<link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-	
-	<noscript>
-		<div class="error">
-			JavaScript must be enabled.
-		</div>
-		<br>
-	</noscript>
 
-	<h1 id="repo"></h1>
-
-	<h2>Previous Files</h2>
-	<div>
-		<ul class="prev-list" id="prev-files"></ul>
+	<div id="toolbar">
+		<button id="back">&#8249; Back</button>
 	</div>
 
-	<h2>New File</h2>
-	<form id="form">
-		<input type="text" id="file" placeholder="path/to/file.js" required="true">
-		<br>
-		<input type="submit" value="Type">
-	</form>
+	<div id="content">
+		<noscript>
+			<div class="error">
+				JavaScript must be enabled.
+			</div>
+			<br>
+		</noscript>
+
+		<h1 id="repo"></h1>
+
+		<h2>Previous Files</h2>
+		<div>
+			<ul class="prev-list" id="prev-files"></ul>
+		</div>
+
+		<h2>New File</h2>
+		<form id="form">
+			<input type="text" id="file" placeholder="path/to/file.js" required="true">
+			<br>
+			<input type="submit" value="Type">
+		</form>
+	</div>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.4.2/localforage.min.js"></script>

@@ -23,3 +23,7 @@ $("#form").submit((event) => {
 	let file = $("#file").val();
 	window.location.href = `/type.html#${repo}/${file}`;
 });
+
+$("#back").click(() => {
+	window.location.href = "/";
+});
