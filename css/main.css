@@ -1,3 +1,14 @@
+/* General */
+.error {
+	border: 1px solid red;
+	border-radius: 3px;
+	background-color: rgba(255, 0, 0, 0.5);
+	padding: 5px;
+	font-size: 2em;
+	font-family: "Helvetica", Arial, sans-serif;
+}
+
+/* Editor */
 .invalid {
 	background-color: red;
 	color: white !important;
@@ -13,11 +24,24 @@
 	height: 100%;
 }
 
-.error {
-	border: 1px solid red;
-	border-radius: 3px;
-	background-color: rgba(255, 0, 0, 0.5);
+/* Index */
+.prev-list {
+	padding: 0px;
+	margin: 0px;
+}
+
+.prev-list > li {
+	display: inline-block;
+	width: 30%;
+	list-style: none;
+	margin: 5px;
 	padding: 5px;
-	font-size: 2em;
-	font-family: "Helvetica", Arial, sans-serif;
+	border: #CCC 1px solid;
+	border-radius: 3px;
+}
+
+.prev-list > li > a,
+.prev-list > li > a:visited {
+	text-decoration: none;
+	color: blue;
 }
