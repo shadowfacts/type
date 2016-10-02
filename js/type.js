@@ -165,6 +165,9 @@ function handleKeyDown(event) {
 		} else if (event.keyCode == 13) { // enter
 			event.preventDefault();
 			handleEnter(event);
+		} else if (event.keyCode == 9) { // tab
+			event.preventDefault();
+			handleTab(event);
 		}
 	}
 }
@@ -222,6 +225,14 @@ function handleEnter(event) {
 		} else {
 			goToNextChunk();
 		}
+	}
+}
+
+function handleTab(event) {
+	let pos = editor.getCursor();
+	let line = editor.doc.getLine(pos.line);
+	if (line.charCodeAt(pos.ch) == 9) {
+		setCursor({ line: pos.line, ch: pos.ch + 1 });
 	}
 }
 
