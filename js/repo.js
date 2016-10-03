@@ -1,5 +1,7 @@
 let repo = window.location.hash.substring(1);
 
+$("#repo-title").text(repo);
+
 localforage.getItem(repo)
 	.then((val) => {
 		for (var f in val) {
