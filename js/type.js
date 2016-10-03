@@ -14,10 +14,10 @@ let repo = hashBits.slice(0, 3).join("/");
 let filePath = hashBits.slice(3, hashBits.length).join("/");
 
 // language selector
-let langaugeSelector = $("#language");
-langaugeSelector.change(() => {
-	let selected = langaugeSelector.val();
-	var langauge;
+let languageSelecor = $("#language");
+languageSelecor.change(() => {
+	let selected = languageSelecor.val();
+	var language;
 	if (selected == "auto-detect") {
 		language = getLanguageByExtension(getFileExtension());
 	} else {
@@ -26,7 +26,7 @@ langaugeSelector.change(() => {
 	setLanguage(language);
 });
 for (key in languages) {
-	langaugeSelector.append(`<option value="${key}">${key}</option>`);
+	languageSelecor.append(`<option value="${key}">${key}</option>`);
 }
 
 // theme selector
