@@ -530,7 +530,11 @@ function saveCursor(obj) {
 }
 
 function loadElapsedTime(obj) {
-	elapsedTime = obj.elapsedTime;
+	if (obj && obj.elapsedTime) {
+		elapsedTime = obj.elapsedTime;
+	} else {
+		elapsed = 0;
+	}
 }
 
 function saveElapsedTime(obj) {
