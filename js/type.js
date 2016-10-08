@@ -570,15 +570,8 @@ function updateWPM() {
 	let words = typed.split(/[\s,\.]+/).length;
 	
 	let seconds = elapsedTime / 1000;
-	if (seconds >= 60) {
-		// update real WPM
-		let minutes = seconds / 60;
-		$("#wpm").text(Math.round(words / minutes));
-	} else {
-		// extrapolate forwards
-		let scaledWords = words / (seconds / 60);
-		$("#wpm").text(Math.round(scaledWords));
-	}
+	let minutes = seconds / 60;
+	$("#wpm").text(Math.round(words / minutes));
 }
 
 function pause() {
