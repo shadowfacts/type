@@ -44,6 +44,7 @@
 
 #content {
 	margin-top: 33px;
+	font-family: "Ubuntu Mono";
 }
 
 #content.paused > .CodeMirror {
