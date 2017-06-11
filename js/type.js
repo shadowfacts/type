@@ -101,8 +101,6 @@ function setup(data, mime) {
 		readOnly: true,
 		autofocus: true,
 		extraKeys: {
-			Up: () => {},
-			Down: () => {},
 			Left: () => {},
 			Right: () => {}
 		}
@@ -274,24 +272,25 @@ function moveToEndOfPreviousLine() {
 }
 
 function isComplete() {
+console.log('isComplete');
 	if (!areAllNextLinesEmpty()) {
 		if (incompleteMark.lines.length != 0) {
 			return false;
 		}
 	}
 
-	for (var i = 0; i < invalids.length; i++) {
-		let arr = invalids[i];
-		if (arr) {
-			for (var j = 0; j < arr.length; j++) {
-				// invalid marks are sometimes cleared but not removed
-				// this can be checked by checking mark.lines.length != 0
-				if (arr[j] && arr[j].lines.length != 0) {
-					return false;
-				}
-			}
-		}
-	}
+	// for (var i = 0; i < invalids.length; i++) {
+	// 	let arr = invalids[i];
+	// 	if (arr) {
+	// 		for (var j = 0; j < arr.length; j++) {
+	// 			// invalid marks are sometimes cleared but not removed
+	// 			// this can be checked by checking mark.lines.length != 0
+	// 			if (arr[j] && arr[j].lines.length != 0) {
+	// 				return false;
+	// 			}
+	// 		}
+	// 	}
+	// }
 	return true;
 }
 

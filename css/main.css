@@ -43,9 +43,42 @@
 }
 
 #content {
+<<<<<<< HEAD
 	margin-top: 33px;
 	font-family: "Ubuntu Mono";
+=======
+	margin-top: 50px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 80%;
+	border: 1px solid;
+>>>>>>> ed75a73032ad7ad2add13679f8a0289e256c0ec3
 }
+
+button {
+    background-color:#4a6ca8;
+    -moz-border-radius:7px;
+    -webkit-border-radius:7px;
+    border-radius:7px;
+    border:1px solid #4e6096;
+    display:inline-block;
+    cursor:pointer;
+    color:#ffffff;
+    font-family:Arial;
+    font-size:17px;
+    padding:6px 16px;
+    text-decoration:none;
+    text-shadow:0px 1px 0px #283966;
+}
+button:hover {
+    background-color:#476e9e;
+}
+button:active {
+    position:relative;
+    top:1px;
+}
+
+
 
 #content.paused > .CodeMirror {
 	opacity: 0.5;
@@ -71,4 +104,8 @@
 .prev-list > li > a:visited {
 	text-decoration: none;
 	color: blue;
+}
+
+body {
+font-family: "Open Sans";
 }
