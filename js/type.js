@@ -211,7 +211,7 @@ function handleEnter(event) {
 	let pos = editor.getCursor();
 	let currentLine = editor.doc.getLine(pos.line);
 	let trimmed = currentLine.trim();
-	if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
+	// if (editor.getCursor().ch >= currentLine.indexOf(trimmed) + trimmed.length) {
 		if (pos.line < editor.doc.size - 1) {
 			var newLine = pos.line;
 			while (true) {
@@ -235,7 +235,7 @@ function handleEnter(event) {
 		} else {
 			goToNextChunk();
 		}
-	}
+	// }
 }
 
 function handleTab(event) {
