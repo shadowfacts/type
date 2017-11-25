@@ -70,7 +70,7 @@ $.get({
 				console.log(`Detected language as ${lang.mime}`);
 				if (Array.isArray(lang.file)) {
 					if (lang.file.length != 0) {
-						var req = req = $.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[0]}/${lang.file[0]}.min.js`);
+						var req = $.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[0]}/${lang.file[0]}.min.js`);
 						for (var i = 1; i < lang.file.length; i++) {
 							req = req.then($.getScript(`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.19.0/mode/${lang.file[i]}/${lang.file[i]}.min.js`));
 						}
