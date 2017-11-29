@@ -275,7 +275,7 @@ let languages = {
 		extensions: ["pl", "al", "cgi", "fcgi", "perl", "ph", "plx", "pm", "pod", "psgi", "t"]
 	},
 	"PHP": {
-		file: "php",
+		file: ["php","htmlmixed","xml","javascript","clike"],
 		mime: "application/x-httpd-php",
 		extensions: ["php"]
 	},
