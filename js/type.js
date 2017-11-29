@@ -56,7 +56,7 @@ $("#restart").click(() => {
 
 // back button
 $("#back").click(() => {
-	window.location.href = `/repo.html#${repo}`;
+	window.location.href = `./repo.html#${repo}`;
 });
 
 // fetch file and setup
