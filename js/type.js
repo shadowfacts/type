@@ -407,7 +407,7 @@ function goToNextChunk() {
 								});
 						} else {
 							let hash = window.location.hash;
-							window.location.href = `/complete.html${hash}`;
+							window.location.href = `./complete.html${hash}`;
 						}
 					})
 					.catch((e) => {
