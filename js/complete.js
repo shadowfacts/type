@@ -7,8 +7,12 @@ let file = hashBits[hashBits.length - 1];
 
 $("#congrats").html(`Congratulations, you've completed <code>${file}</code> in <code>${repoName}</code>!`);
 
-$("#repo").attr("href", `/repo.html#${repo}`);
+$("#repo").attr("href", `./repo.html#${repo}`);
 
 $("#back").click(() => {
-	window.location.href = `/type.html#${hash}`;
+	window.location.href = `./type.html#${hash}`;
+});
+
+$("#certificate").click(() => {
+    var docDefinition = { content: 'Certificate for complesion\nCongratulation! you completed!!\n https://github.com/${repoName}/${file} \n Powerd by https://github.com/daisukeokaoss/type'  };
 });
